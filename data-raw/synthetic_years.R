@@ -22,7 +22,7 @@ options_sj <- water_year_indices %>%
 
 names(options_sj) <- 1980:1999
 
-fw_combo <- map_chr(seq(target_sj$Index),
+synth_year_mapping <- map_chr(seq(target_sj$Index),
                       ~names(
                         which.min(
                           abs(target_sj$Index[.] - options_sj) +
@@ -30,23 +30,17 @@ fw_combo <- map_chr(seq(target_sj$Index),
                         )
                     )
 
-cbind(fw_combo, adams, same = fw_combo == adams)
+calibration_proxy_year <- data.frame(year = 1998:2017, calibration_year = synth_year_mapping,
+                   sac_actual = target_sac$Index,
+                   sac_synth = options_sac[synth_year_mapping],
+                   sj_actual = target_sj$Index,
+                   sj_synth = options_sj[synth_year_mapping])
 
-data <- data_frame(years = 1998:2017, adams, fw_combo,
-                   sac_actual = target_sac$Index, sac_adams = options_sac[adams],
-                   sac_fw = options_sac[fw_combo],
-                   sj_actual = target_sj$Index, sj_adams = options_sj[adams],
-                   sj_fw = options_sj[fw_combo])
-View(data)
+cor(calibration_proxy_year$sj_actual, calibration_proxy_year$sj_synth)
+cor(calibration_proxy_year$sac_actual, calibration_proxy_year$sac_synth)
 
-data %>%
-  select(-adams:-fw_combo) %>%
-  gather(measure, index, -years) %>%
-  ggplot(aes(years, index, color = measure)) +
-  geom_line() +
-  theme(text = element_text(size = 18))
 
-cor(data$sj_actual, data$sj_adams)
-cor(data$sj_actual, data$sj_fw)
-cor(data$sac_actual, data$sac_adams)
-cor(data$sac_actual, data$sac_fw)
+calibration_year_lookup <- setNames(as.numeric(calibration_proxy_year$calibration_year), calibration_proxy_year$year)
+
+usethis::use_data(calibration_year_lookup, overwrite = TRUE)
+
