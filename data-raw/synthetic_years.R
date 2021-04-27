@@ -40,7 +40,8 @@ cor(calibration_proxy_year$sj_actual, calibration_proxy_year$sj_synth)
 cor(calibration_proxy_year$sac_actual, calibration_proxy_year$sac_synth)
 
 
-calibration_year_lookup <- setNames(as.numeric(calibration_proxy_year$calibration_year), calibration_proxy_year$year)
+all_sim_years <- setNames(1:20, 1980:1999)
+calibration_year_index <- all_sim_years[as.character(calibration_proxy_year$calibration_year)]
 
-usethis::use_data(calibration_year_lookup, overwrite = TRUE)
+usethis::use_data(calibration_year_index, overwrite = TRUE)
 
