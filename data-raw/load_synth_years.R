@@ -44,6 +44,7 @@ synth_12_n <- function(n, input_array, model_wy = calibration_year_index) {
 }
 
 set_synth_years <- function(species) {
+
   switch(species,
          'spring' = {
            run <- springRunDSM::load_baseline_data()
@@ -54,6 +55,7 @@ set_synth_years <- function(species) {
          'winter' = {
            run <- winterRunDSM::load_baseline_data()
            })
+
   migratory_temperature_proportion_over_20 <- run$migratory_temperature_proportion_over_20
   proportion_diverted <- synth_n_12_20(31, run$proportion_diverted)
   total_diverted <- synth_n_12_20(31, run$total_diverted)
@@ -146,3 +148,26 @@ set_synth_years <- function(species) {
 
 return(all_inputs)
 }
+
+
+
+# create the data to be cached ----
+# fall run
+fall_run_calibration <- set_synth_years(species = "fall")
+usethis::use_data(fall_run_calibration, overwrite = TRUE)
+
+# spring
+spring_run_calibration <- set_synth_years(species = "spring")
+usethis::use_data(spring_run_calibration, overwrite = TRUE)
+
+# winter
+winter_run_calibration <- set_synth_years(species = "winter")
+usethis::use_data(winter_run_calibration, overwrite = TRUE)
+
+
+
+
+
+
+
+
