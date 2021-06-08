@@ -1,3 +1,19 @@
+#' Set Synthetic Year Series
+#' @description Generates model inputs for running the life cycle models in calibration mode
+#' @details This function modifies the baseline model inputs for a run using
+#' the synthetic year series. More details about the synthetic year series can be found
+#' here: \code{\link{calibration_year_index}}.
+#'
+#' Results of running \code{set_synth_years} for each run are cached and accessible via
+#' \code{\link{fall_run_calibration}}, \code{\link{winter_run_calibration}},and
+#' \code{\link{spring_run_calibration}}
+#' @param species either "fr", "wr", "sr" for fall run, winter run, or spring run respectively
+#' @examples
+#' \dontrun{
+#' list2env(set_synth_years("fr"), .GlobalEnv)
+#' fallRunDSM::fall_run_model(mode = "calibrate", seeds = seeds, ..params = params)
+#' }
+#' @export
 set_synth_years <- function(species = c("fr", "wr", "sr", "st")) {
 
   species <- match.arg(species)
