@@ -7,18 +7,17 @@ set_synth_years <- function(species = c("fr", "wr", "sr", "st")) {
                    "wr" = winterRunDSM::load_baseline_data(),
                    "sr" = springRunDSM::load_baseline_data())
 
-  year_index <- DSMCalibrationData::calibration_year_index
+  years <- DSMCalibrationData::calibration_year_index
 
   inputs$freeport_flows <- inputs$freeport_flows[ , years]
   inputs$vernalis_flows <- inputs$vernalis_flows[ , years]
   inputs$stockton_flows <- inputs$stockton_flows[ , years]
-  inputs$CVP_exports <- inputs$CVP_exports[years, ]
-  inputs$SWP_exports <- inputs$SWP_exports[years, ]
+  inputs$CVP_exports <- inputs$CVP_exports[ , years]
+  inputs$SWP_exports <- inputs$SWP_exports[ , years]
   inputs$proportion_diverted <- inputs$proportion_diverted[ , , years]
   inputs$total_diverted <- inputs$proportion_diverted[ , , years]
   inputs$delta_proportion_diverted <- inputs$delta_proportion_diverted[ , years, ]
   inputs$delta_total_diverted <- inputs$delta_total_diverted[ , years, ]
-  inputs$prop_pulse_flows <- inputs$prop_pulse_flows[ , years]
   inputs$prop_flow_natal <- inputs$prop_flow_natal[ , years] # extra year
   inputs$upper_sacramento_flows <- inputs$upper_sacramento_flows[ , years]
   inputs$delta_inflow <- inputs$delta_inflow[ , years, ]
@@ -40,7 +39,4 @@ set_synth_years <- function(species = c("fr", "wr", "sr", "st")) {
 
   return(inputs)
 }
-
-purrr::pwalk()
-print(paste(deparse(substitute(inputs[1])), '-', dim(inputs[1])))
 
