@@ -40,8 +40,6 @@ cor(calibration_proxy_year$sj_actual, calibration_proxy_year$sj_synth)
 cor(calibration_proxy_year$sac_actual, calibration_proxy_year$sac_synth)
 
 
-all_sim_years <- setNames(1:20, 1980:1999)
-calibration_year_index <- all_sim_years[as.character(calibration_proxy_year$calibration_year)]
-
+calibration_year_index <- setNames(calibration_proxy_year$calibration_year, 1998:2017)
 usethis::use_data(calibration_year_index, overwrite = TRUE)
 
