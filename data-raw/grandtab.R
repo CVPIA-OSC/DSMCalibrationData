@@ -10,7 +10,6 @@ grandtab_raw <- read_csv("data-raw/known-adults-2019.csv",
 
 grandtab_imputed <- grandtab_raw %>%
   gather(year, count, -watershed, -order) %>%
-  # filter(count >= 100) %>%
   group_by(watershed) %>%
   mutate(
     count = as.numeric(count),

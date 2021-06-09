@@ -7,13 +7,6 @@
 \alias{spring_run_calibration}
 \alias{winter_run_calibration}
 \title{Calibration Data}
-\format{
-An object of class \code{list} of length 25.
-
-An object of class \code{list} of length 26.
-
-An object of class \code{list} of length 25.
-}
 \usage{
 fall_run_calibration
 
@@ -22,6 +15,7 @@ spring_run_calibration
 winter_run_calibration
 }
 \description{
-data used for calibration of DSM life cycle models.
+Cached data used for calibration of DSM life cycle models
+generated with \code{\link{set_synth_years}}
 }
 \keyword{datasets}
