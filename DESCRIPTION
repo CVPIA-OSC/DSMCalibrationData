@@ -1,12 +1,13 @@
 Package: DSMCalibrationData
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: DSM Calibration Data
+Version: 1.0
+Authors@R: c(
+    person("Sadie", "Gill", email = "sgill@flowwest.com", role = c("aut", "cre")),
+    person("Emanuel", "Rodriguez", email = "erodriguez@flowwest.com", role = "aut"),
+    person("Erin", "Cain", email = "ecain@flowwest.com", role = "aut"))
+Description: Calibration data for CVPIA's Structure Decision Making chinook life cycle models.
+License: CC0
 Encoding: UTF-8
 LazyData: true
 Depends: 
