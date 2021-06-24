@@ -1,24 +1,118 @@
 library(fallRunDSM)
 library(tidyverse)
 
-grandtab_raw <- read_csv("data-raw/known-adults-2019.csv",
-                         col_names = c("watershed", "order", "1998", "1999",
-                                       "2000", "2001", "2002", "2003", "2004",
-                                       "2005", "2006", "2007", "2008", "2009",
-                                       "2010", "2011", "2012", "2013", "2014",
-                                       "2015", "2016", "2017"), skip = 1)
+watershed_order <- DSMhabitat::watershed_metadata %>%
+  select(watershed, order) %>%
+  filter(order > 0)
 
-grandtab_imputed <- grandtab_raw %>%
+# SacPas data
+grandtab_raw <- read_csv("data-raw/Grandtab_Modified.csv")
+unique(grandtab_raw$run)
+
+# Explore Locations -----
+unique(grandtab_raw$location)
+# location "Butte Creek" for spring run uses carcus count when available then snorkel
+butte <- c(
+  "Butte Creek - Carcass" = "Butte Creek",
+  "Butte Creek - Snorkel" = "Butte Creek",
+  "Butte Creek" = "Butte Creek")
+
+grandtab_raw %>%
+  mutate(ll = butte[location]) %>%
+  filter(!is.na(ll), startyear >= 1998) %>%
+  select(startyear, location, count, run) %>%
+  spread(startyear, count) %>%  View
+
+# Battle Creek
+# remove "Hatchery Transfers to Battle Creek - CNFH" = "Battle Creek" from battle creek sum
+battle <- c("Battle Creek" = "Battle Creek", "Battle Creek - CNFH" = "Battle Creek",
+            "Battle Creek - Downstream of CNFH" = "Battle Creek",
+            "Battle Creek - Upstream of CNFH" = "Battle Creek",
+            "Hatchery Transfers to Battle Creek - CNFH" = "Battle Creek")
+
+grandtab_raw %>%
+  mutate(ll = battle[location]) %>%
+  filter(!is.na(ll), startyear >= 1998) %>%
+  select(startyear, location, count, run) %>%
+  spread(startyear, count) %>%  View
+
+# sacramento
+# remove "Passing RBDD"
+grandtab_raw %>%
+  filter(location %in% c("Mainstem - Downstream of RBDD",
+                         "Mainstem - Upstream of RBDD",
+                         "Mainstem",
+                         "Passing RBDD",
+                         "Downstream of RBDD",
+                         "Upstream of RBDD"),
+         startyear >= 1998, run == "Late-Fall") %>%
+  select(startyear, minorbasin, location, count, run) %>% View
+  spread(startyear, count) %>%  View
+
+# cleaned up location names
+watershed_lookups <- c(
+  "Mainstem - Downstream of RBDD" = "Upper Sacramento River",
+  "Mainstem - Upstream of RBDD" = "Upper Sacramento River",
+  "Mainstem" = "Upper Sacramento River",
+  "Downstream of RBDD" = "Upper Sacramento River",
+  "Upstream of RBDD" = "Upper Sacramento River",
+  "Antelope Creek" = "Antelope Creek",
+  "Battle Creek" = "Battle Creek", "Battle Creek - CNFH" = "Battle Creek",
+  "Battle Creek - Downstream of CNFH" = "Battle Creek",
+  "Battle Creek - Upstream of CNFH" = "Battle Creek",
+  "Bear Creek" = "Bear Creek",
+  "Big Chico" = "Big Chico Creek",
+  "Butte Creek" = "Butte Creek",
+  "Clear Creek" = "Clear Creek",
+  "Cottonwood Creek" = "Cottonwood Creek",
+  "Cow Creek" = "Cow Creek",
+  "Deer Creek" = "Deer Creek",
+  "Mill Creek" = "Mill Creek",
+  "Paynes Creek" = "Paynes Creek",
+  "Stoney Creek" = "Stoney Creek",
+  "Thomes Creek" = "Thomes Creek",
+  "Bear River" = "Bear River",
+  "Feather River" = "Feather River",
+  "Yuba River" = "Yuba River",
+  "American River" = "American River",
+  "Calaveras River" = "Calaveras River",
+  "Cosumnes River" = "Cosumnes River",
+  "Mokelumne River" = "Mokelumne River",
+  "Merced River" = "Merced River",
+  "Stanislaus River" = "Stanislaus River",
+  "Tuolumne River" = "Tuolumne River"
+)
+
+# Filter grandtab data ----
+grandtab <- grandtab_raw %>%
+  mutate(location2 = watershed_lookups[location]) %>%
+  filter(!is.na(location2), endyear >= 1998) %>%
+  group_by(run, watershed = location2, year = endyear) %>%
+  summarise(count = sum(count, na.rm = TRUE)) %>%
+  ungroup()
+
+# Imputed Grandtab ----
+# Fall
+fall_spawn <- DSMhabitat::fr_spawn[,10,1] != 0
+
+grandtab_imputed_fall <- grandtab %>%
+  filter(run == "Fall") %>%
+  select(-run) %>%
+  right_join(watershed_order) %>%
+  spread(year, count) %>%
+  select(-`<NA>`) %>%
   gather(year, count, -watershed, -order) %>%
-  group_by(watershed) %>%
+  group_by(watershed, order) %>%
   mutate(
-    count = as.numeric(count),
-    mean = mean(count, na.rm = TRUE),
+    mean = mean(count[count > 0], na.rm = TRUE),
     count2 = case_when(
-      is.nan(mean) ~ 40,
-      is.na(count) ~ mean,
+      !fall_spawn[watershed] ~ as.numeric(NA),
+      fall_spawn[watershed] & is.nan(mean) ~ 40,
+      fall_spawn[watershed] & count == 0 ~ mean,
+      fall_spawn[watershed] & is.na(count) ~ mean,
       TRUE ~ count
-    )) %>%
+    )
+  ) %>%
   ungroup() %>%
   select(watershed, count = count2, year, order) %>%
   spread(year, count) %>%
@@ -26,18 +120,166 @@ grandtab_imputed <- grandtab_raw %>%
   select(-watershed, -order) %>%
   as.matrix()
 
-rownames(grandtab_imputed) <- watershed_attributes$watershed
-usethis::use_data(grandtab_imputed, overwrite = TRUE)
+rownames(grandtab_imputed_fall) <- watershed_order$watershed
 
+# Winter
+winter_spawn <- DSMhabitat::wr_spawn[,10,1] != 0
 
-grandtab_observed <- grandtab_raw %>%
+grandtab_imputed_winter <- grandtab %>%
+  filter(run == "Winter") %>%
+  select(-run) %>%
+  right_join(watershed_order) %>%
+  spread(year, count) %>%
+  select(-`<NA>`) %>%
   gather(year, count, -watershed, -order) %>%
-  mutate(count = as.numeric(count)) %>%
-  filter(count > 100 | is.na(count)) %>%
+  group_by(watershed, order) %>%
+  mutate(
+    mean = mean(count[count > 0], na.rm = TRUE),
+    count2 = case_when(
+      !winter_spawn[watershed] ~ as.numeric(NA),
+      winter_spawn[watershed] & count < 40 ~ 40,
+      winter_spawn[watershed] & is.na(count) ~ mean,
+      TRUE ~ count
+    )
+  ) %>%
+  ungroup() %>%
+  select(watershed, count = count2, year, order) %>%
   spread(year, count) %>%
   arrange(order) %>%
   select(-watershed, -order) %>%
   as.matrix()
 
-rownames(grandtab_observed) <- watershed_attributes$watershed
+rownames(grandtab_imputed_winter) <- watershed_order$watershed
+
+# Spring
+# TODO what to do about tiny mean values?
+spring_spawn <- DSMhabitat::sr_spawn[,10,1] != 0
+
+grandtab_imputed_spring <- grandtab %>%
+  filter(run == "Spring") %>%
+  select(-run) %>%
+  right_join(watershed_order) %>%
+  spread(year, count) %>%
+  select(-`<NA>`) %>%
+  gather(year, count, -watershed, -order) %>%
+  group_by(watershed, order) %>%
+  mutate(
+    mean = mean(count[count > 0], na.rm = TRUE),
+    count2 = case_when(
+      !spring_spawn[watershed] ~ as.numeric(NA),
+      spring_spawn[watershed] & is.nan(mean) ~ 40,
+      spring_spawn[watershed] & count == 0 ~ mean,
+      spring_spawn[watershed] & is.na(count) ~ mean,
+      TRUE ~ count
+    )
+  ) %>%
+  ungroup() %>%
+  select(watershed, count = count2, year, order) %>%
+  spread(year, count) %>%
+  arrange(order) %>%
+  select(-watershed, -order) %>%
+  as.matrix()
+
+rownames(grandtab_imputed_spring) <- watershed_order$watershed
+
+# Late-Fall
+# latefall_spawn <- DSMhabitat::lfr_spawn[,10,1] != 0
+#
+# grandtab_imputed_late_fall <- grandtab %>%
+#   filter(run == "Late-Fall") %>%
+#   select(-run) %>%
+#   right_join(watershed_order) %>%
+#   spread(year, count) %>%
+#   select(-`<NA>`) %>%
+#   gather(year, count, -watershed, -order) %>%
+#   group_by(watershed, order) %>%
+#   mutate(
+#     mean = mean(count[count > 0], na.rm = TRUE),
+#     count2 = case_when(
+#       !late_fall_spawn[watershed] ~ as.numeric(NA),
+#       late_fall_spawn[watershed] & is.nan(mean) ~ 40,
+#       late_fall_spawn[watershed] & count == 0 ~ mean,
+#       late_fall_spawn[watershed] & is.na(count) ~ mean,
+#       TRUE ~ count
+#     )
+#   ) %>%
+#   ungroup() %>%
+#   select(watershed, count = count2, year, order) %>%
+#   spread(year, count) %>%
+#   arrange(order) %>%
+#   select(-watershed, -order) %>%
+#   as.matrix()
+#
+# rownames(grandtab_imputed_late_fall) <- watershed_order$watershed
+
+grandtab_imputed <- list(fall = grandtab_imputed_fall,
+                         # late_fall = grandtab_imputed_late_fall,
+                         winter = grandtab_imputed_winter,
+                         spring = grandtab_imputed_spring)
+
+usethis::use_data(grandtab_imputed, overwrite = TRUE)
+
+# Grandtab Observed -----
+
+# Fall
+grandtab_observed_fall <- grandtab %>%
+  filter(run == "Fall") %>%
+  select(-run) %>%
+  filter(count > 100) %>%
+  right_join(watershed_order) %>%
+  spread(year, count) %>%
+  select(-`<NA>`) %>%
+  arrange(order) %>%
+  select(-watershed, -order) %>%
+  as.matrix()
+
+rownames(grandtab_observed_fall) <- watershed_order$watershed
+
+# Winter
+grandtab_observed_winter <- grandtab %>%
+  filter(run == "Winter") %>%
+  select(-run) %>%
+  filter(count > 100) %>%
+  right_join(watershed_order) %>%
+  spread(year, count) %>%
+  select(-`<NA>`) %>%
+  arrange(order) %>%
+  select(-watershed, -order) %>%
+  as.matrix()
+
+rownames(grandtab_observed_winter) <- watershed_order$watershed
+
+# Spring
+grandtab_observed_spring <- grandtab %>%
+  filter(run == "Spring") %>%
+  select(-run) %>%
+  filter(count > 100) %>%
+  right_join(watershed_order) %>%
+  spread(year, count) %>%
+  select(-`<NA>`) %>%
+  arrange(order) %>%
+  select(-watershed, -order) %>%
+  as.matrix()
+
+rownames(grandtab_observed_spring) <- watershed_order$watershed
+
+# Late-Fall
+grandtab_observed_late_fall <- grandtab %>%
+  filter(run == "Late-Fall") %>%
+  select(-run) %>%
+  filter(count > 100) %>%
+  right_join(watershed_order) %>%
+  spread(year, count) %>%
+  select(-`<NA>`) %>%
+  arrange(order) %>%
+  select(-watershed, -order) %>%
+  as.matrix()
+
+rownames(grandtab_observed_late_fall) <- watershed_order$watershed
+
+# TODO what to do about observed fish in tribs the SIT is not considering?
+grandtab_observed <- list(fall = grandtab_observed_fall,
+                          late_fall = grandtab_observed_late_fall,
+                          winter = grandtab_observed_winter,
+                          spring = grandtab_observed_spring)
 usethis::use_data(grandtab_observed, overwrite = TRUE)
