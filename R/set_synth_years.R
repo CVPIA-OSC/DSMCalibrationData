@@ -42,11 +42,11 @@ set_synth_years <- function(species = c("fr", "lfr", "wr", "sr", "st")) {
   params$delta_inflow <- params$delta_inflow[ , years, ]
   params$proportion_flow_bypass <- params$proportion_flow_bypass[ , years, ]
   params$gates_overtopped <- params$gates_overtopped[ , years, ]
-  params$vernalis_temps <- params$vernalis_temps[ , years] # should this have spawn_years
-  params$prisoners_point_temps <- params$prisoners_point_temps[ , years]# should this have spawn_years
+  params$vernalis_temps <- params$vernalis_temps[ , years]
+  params$prisoners_point_temps <- params$prisoners_point_temps[ , years]
   params$degree_days <- params$degree_days[ , , spawn_years]
-  params$avg_temp <- params$avg_temp[ , , years] # should this have spawn_years
-  params$avg_temp_delta <- params$avg_temp_delta[ , years, ]  # should this have spawn_years
+  params$avg_temp <- params$avg_temp[ , , years]
+  params$avg_temp_delta <- params$avg_temp_delta[ , years, ]
   params$spawning_habitat <- params$spawning_habitat[ , , spawn_years]
   params$inchannel_habitat_fry <- params$inchannel_habitat_fry[ , , years]
   params$inchannel_habitat_juvenile <- params$inchannel_habitat_juvenile[ , , years]
