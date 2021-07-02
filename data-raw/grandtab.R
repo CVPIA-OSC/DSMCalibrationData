@@ -104,7 +104,7 @@ grandtab_imputed_fall <- grandtab %>%
   gather(year, count, -watershed, -order) %>%
   group_by(watershed, order) %>%
   mutate(
-    mean = mean(count[count > 0], na.rm = TRUE),
+    mean = round(mean(count[count > 0], na.rm = TRUE)),
     count2 = case_when(
       !fall_spawn[watershed] ~ as.numeric(NA),
       fall_spawn[watershed] & is.nan(mean) ~ 40,
@@ -123,28 +123,19 @@ grandtab_imputed_fall <- grandtab %>%
 rownames(grandtab_imputed_fall) <- watershed_order$watershed
 
 # Winter
-winter_spawn <- DSMhabitat::wr_spawn[,10,1] != 0
+winter_spawn <- DSMhabitat::wr_spawn[ ,10, 1] != 0
+upsac_wr <- grandtab %>%
+  filter(run == "Winter", watershed == "Upper Sacramento River") %>%
+  select(-run)
 
-grandtab_imputed_winter <- grandtab %>%
-  filter(run == "Winter") %>%
-  select(-run) %>%
+bat_wr <- upsac_wr %>%
+  mutate(watershed = "Battle Creek",
+         count = round((600/mean(count))* count))
+
+grandtab_imputed_winter <- bind_rows(upsac_wr, bat_wr) %>%
   right_join(watershed_order) %>%
   spread(year, count) %>%
   select(-`<NA>`) %>%
-  gather(year, count, -watershed, -order) %>%
-  group_by(watershed, order) %>%
-  mutate(
-    mean = mean(count[count > 0], na.rm = TRUE),
-    count2 = case_when(
-      !winter_spawn[watershed] ~ as.numeric(NA),
-      winter_spawn[watershed] & count < 40 ~ 40,
-      winter_spawn[watershed] & is.na(count) ~ mean,
-      TRUE ~ count
-    )
-  ) %>%
-  ungroup() %>%
-  select(watershed, count = count2, year, order) %>%
-  spread(year, count) %>%
   arrange(order) %>%
   select(-watershed, -order) %>%
   as.matrix()
@@ -164,7 +155,7 @@ grandtab_imputed_spring <- grandtab %>%
   gather(year, count, -watershed, -order) %>%
   group_by(watershed, order) %>%
   mutate(
-    mean = mean(count[count > 0], na.rm = TRUE),
+    mean = round(mean(count[count > 0], na.rm = TRUE)),
     count2 = case_when(
       !spring_spawn[watershed] ~ as.numeric(NA),
       spring_spawn[watershed] & is.nan(mean) ~ 40,
@@ -183,37 +174,37 @@ grandtab_imputed_spring <- grandtab %>%
 rownames(grandtab_imputed_spring) <- watershed_order$watershed
 
 # Late-Fall
-# latefall_spawn <- DSMhabitat::lfr_spawn[,10,1] != 0
-#
-# grandtab_imputed_late_fall <- grandtab %>%
-#   filter(run == "Late-Fall") %>%
-#   select(-run) %>%
-#   right_join(watershed_order) %>%
-#   spread(year, count) %>%
-#   select(-`<NA>`) %>%
-#   gather(year, count, -watershed, -order) %>%
-#   group_by(watershed, order) %>%
-#   mutate(
-#     mean = mean(count[count > 0], na.rm = TRUE),
-#     count2 = case_when(
-#       !late_fall_spawn[watershed] ~ as.numeric(NA),
-#       late_fall_spawn[watershed] & is.nan(mean) ~ 40,
-#       late_fall_spawn[watershed] & count == 0 ~ mean,
-#       late_fall_spawn[watershed] & is.na(count) ~ mean,
-#       TRUE ~ count
-#     )
-#   ) %>%
-#   ungroup() %>%
-#   select(watershed, count = count2, year, order) %>%
-#   spread(year, count) %>%
-#   arrange(order) %>%
-#   select(-watershed, -order) %>%
-#   as.matrix()
-#
-# rownames(grandtab_imputed_late_fall) <- watershed_order$watershed
+late_fall_spawn <- DSMhabitat::lfr_spawn[,10,1] != 0
+
+grandtab_imputed_late_fall <- grandtab %>%
+  filter(run == "Late-Fall") %>%
+  select(-run) %>%
+  right_join(watershed_order) %>%
+  spread(year, count) %>%
+  select(-`<NA>`) %>%
+  gather(year, count, -watershed, -order) %>%
+  group_by(watershed, order) %>%
+  mutate(
+    mean = round(mean(count[count > 0], na.rm = TRUE)),
+    count2 = case_when(
+      !late_fall_spawn[watershed] ~ as.numeric(NA),
+      late_fall_spawn[watershed] & is.nan(mean) ~ 40,
+      late_fall_spawn[watershed] & count == 0 ~ mean,
+      late_fall_spawn[watershed] & is.na(count) ~ mean,
+      TRUE ~ count
+    )
+  ) %>%
+  ungroup() %>%
+  select(watershed, count = count2, year, order) %>%
+  spread(year, count) %>%
+  arrange(order) %>%
+  select(-watershed, -order) %>%
+  as.matrix()
+
+rownames(grandtab_imputed_late_fall) <- watershed_order$watershed
 
 grandtab_imputed <- list(fall = grandtab_imputed_fall,
-                         # late_fall = grandtab_imputed_late_fall,
+                         late_fall = grandtab_imputed_late_fall,
                          winter = grandtab_imputed_winter,
                          spring = grandtab_imputed_spring)
 
@@ -236,18 +227,18 @@ grandtab_observed_fall <- grandtab %>%
 rownames(grandtab_observed_fall) <- watershed_order$watershed
 
 # Winter
-grandtab_observed_winter <- grandtab %>%
-  filter(run == "Winter") %>%
-  select(-run) %>%
-  filter(count > 100) %>%
-  right_join(watershed_order) %>%
-  spread(year, count) %>%
-  select(-`<NA>`) %>%
-  arrange(order) %>%
-  select(-watershed, -order) %>%
-  as.matrix()
-
-rownames(grandtab_observed_winter) <- watershed_order$watershed
+grandtab_observed_winter <- grandtab_imputed_winter
+  # grandtab %>%
+  # filter(run == "Winter") %>%
+  # select(-run) %>%
+  # filter(count > 100) %>%
+  # right_join(watershed_order) %>%
+  # spread(year, count) %>%
+  # select(-`<NA>`) %>%
+  # arrange(order) %>%
+  # select(-watershed, -order) %>%
+  # as.matrix()
+# rownames(grandtab_observed_winter) <- watershed_order$watershed
 
 # Spring
 grandtab_observed_spring <- grandtab %>%
@@ -277,9 +268,44 @@ grandtab_observed_late_fall <- grandtab %>%
 
 rownames(grandtab_observed_late_fall) <- watershed_order$watershed
 
-# TODO what to do about observed fish in tribs the SIT is not considering?
 grandtab_observed <- list(fall = grandtab_observed_fall,
                           late_fall = grandtab_observed_late_fall,
                           winter = grandtab_observed_winter,
                           spring = grandtab_observed_spring)
 usethis::use_data(grandtab_observed, overwrite = TRUE)
+
+# check species presence ---
+should_be_missing <- DSMscenario::watershed_labels[
+  !as.logical(DSMhabitat::watershed_species_present[1:31, ]$fr *
+                DSMhabitat::watershed_species_present[1:31,]$spawn)]
+missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_observed_fall, na.rm = T))]
+all(should_be_missing %in% missing)
+missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_imputed_fall, na.rm = T))]
+all(should_be_missing %in% missing)
+
+should_be_missing <- DSMscenario::watershed_labels[
+  !as.logical(DSMhabitat::watershed_species_present[1:31, ]$lfr *
+                DSMhabitat::watershed_species_present[1:31,]$spawn)]
+missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_observed_late_fall, na.rm = T))]
+all(should_be_missing %in% missing)
+missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_imputed_late_fall, na.rm = T))]
+all(should_be_missing %in% missing)
+
+should_be_missing <- DSMscenario::watershed_labels[
+  !as.logical(DSMhabitat::watershed_species_present[1:31, ]$sr *
+                DSMhabitat::watershed_species_present[1:31,]$spawn)]
+missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_observed_spring, na.rm = T))]
+all(should_be_missing %in% missing)
+missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_imputed_spring, na.rm = T))]
+all(should_be_missing %in% missing)
+
+should_be_missing <- DSMscenario::watershed_labels[
+  !as.logical(DSMhabitat::watershed_species_present[1:31, ]$wr *
+                DSMhabitat::watershed_species_present[1:31,]$spawn)]
+missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_observed_winter, na.rm = T))]
+all(should_be_missing %in% missing)
+missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_imputed_winter, na.rm = T))]
+all(should_be_missing %in% missing)
+
+
+
