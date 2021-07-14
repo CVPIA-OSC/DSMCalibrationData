@@ -25,6 +25,7 @@ grandtab_raw %>%
 
 # Battle Creek
 # remove "Hatchery Transfers to Battle Creek - CNFH" = "Battle Creek" from battle creek sum
+# remove " Battle Creek - CNFH "
 battle <- c("Battle Creek" = "Battle Creek", "Battle Creek - CNFH" = "Battle Creek",
             "Battle Creek - Downstream of CNFH" = "Battle Creek",
             "Battle Creek - Upstream of CNFH" = "Battle Creek",
@@ -36,8 +37,17 @@ grandtab_raw %>%
   select(startyear, location, count, run) %>%
   spread(startyear, count) %>%  View
 
+grandtab_raw %>%
+  filter(location == "Mokelumne River") %>% View
+
+grandtab_raw %>%
+  filter(location %in% names(battle), between(endyear, 2013, 2017)) %>%
+  group_by(location, origin) %>%
+  summarise(n())
+  summarise(mean=mean(count, na.rm=T))
+
 # sacramento
-# remove "Passing RBDD"
+# remove "Passing RBDD", "Downstream of RBDD", "Passing RBDD", "Upstream of RBDD"
 grandtab_raw %>%
   filter(location %in% c("Mainstem - Downstream of RBDD",
                          "Mainstem - Upstream of RBDD",
@@ -46,18 +56,31 @@ grandtab_raw %>%
                          "Downstream of RBDD",
                          "Upstream of RBDD"),
          startyear >= 1998, run == "Late-Fall") %>%
-  select(startyear, minorbasin, location, count, run) %>% View
-  spread(startyear, count) %>%  View
+  select(startyear, minorbasin, location, count, run) %>%
+  spread(startyear, count)
+
+
+grandtab_raw %>%
+  filter(location %in% c("Mainstem - Downstream of RBDD",
+                         "Mainstem - Upstream of RBDD",
+                         "Mainstem",
+                         "Passing RBDD",
+                         "Downstream of RBDD",
+                         "Upstream of RBDD"),
+         between(endyear, 2013, 2017)) %>%
+  group_by(location, origin) %>%
+  summarise(n())
+
+grandtab_raw %>%
+  filter(origin == "Redd Distribution") %>% View
 
 # cleaned up location names
 watershed_lookups <- c(
   "Mainstem - Downstream of RBDD" = "Upper Sacramento River",
   "Mainstem - Upstream of RBDD" = "Upper Sacramento River",
   "Mainstem" = "Upper Sacramento River",
-  "Downstream of RBDD" = "Upper Sacramento River",
-  "Upstream of RBDD" = "Upper Sacramento River",
   "Antelope Creek" = "Antelope Creek",
-  "Battle Creek" = "Battle Creek", "Battle Creek - CNFH" = "Battle Creek",
+  "Battle Creek" = "Battle Creek",
   "Battle Creek - Downstream of CNFH" = "Battle Creek",
   "Battle Creek - Upstream of CNFH" = "Battle Creek",
   "Bear Creek" = "Bear Creek",
@@ -69,7 +92,6 @@ watershed_lookups <- c(
   "Deer Creek" = "Deer Creek",
   "Mill Creek" = "Mill Creek",
   "Paynes Creek" = "Paynes Creek",
-  "Stoney Creek" = "Stoney Creek",
   "Thomes Creek" = "Thomes Creek",
   "Bear River" = "Bear River",
   "Feather River" = "Feather River",
@@ -86,7 +108,7 @@ watershed_lookups <- c(
 # Filter grandtab data ----
 grandtab <- grandtab_raw %>%
   mutate(location2 = watershed_lookups[location]) %>%
-  filter(!is.na(location2), endyear >= 1998) %>%
+  filter(!is.na(location2), endyear >= 1998, origin == "In-River") %>%
   group_by(run, watershed = location2, year = endyear) %>%
   summarise(count = sum(count, na.rm = TRUE)) %>%
   ungroup()
@@ -307,5 +329,16 @@ all(should_be_missing %in% missing)
 missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_imputed_winter, na.rm = T))]
 all(should_be_missing %in% missing)
 
+# Adult Seeds -----
+# Jim used "Battle Creek - Downstream of CNFH" for "Battle Creek"
+mean_escapement_2013_2017 <- grandtab %>%
+  filter(between(year, 2013, 2017)) %>%
+  group_by(watershed, run) %>%
+  summarise(mean = round(mean(count, na.rm = TRUE))) %>%
+  spread(run, mean) %>%
+  right_join(watershed_order) %>%
+  arrange(order) %>%
+  select(-order) %>%
+  ungroup()
 
-
+usethis::use_data(mean_escapement_2013_2017, overwrite = TRUE)

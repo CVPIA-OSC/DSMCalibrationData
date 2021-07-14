@@ -12,9 +12,12 @@ fall_run_calibration_params <- set_synth_years(species = "fr")
 usethis::use_data(fall_run_calibration_params, overwrite = TRUE)
 
 # spring
-spring_run_calibration_params <- set_synth_years(species = "sr")
-usethis::use_data(spring_run_calibration_params, overwrite = TRUE)
-
-# winter
-winter_run_calibration_params <- set_synth_years(species = "wr")
-usethis::use_data(winter_run_calibration_params, overwrite = TRUE)
+# spring_run_calibration_params <- set_synth_years(species = "sr")
+# usethis::use_data(spring_run_calibration_params, overwrite = TRUE)
+#
+# # winter
+# winter_run_calibration_params <- set_synth_years(species = "wr")
+# usethis::use_data(winter_run_calibration_params, overwrite = TRUE)
+#
+# late_fall_run_calibration_params <- set_synth_years(species = "lfr")
+# usethis::use_data(late_fall_run_calibration_params, overwrite = TRUE)

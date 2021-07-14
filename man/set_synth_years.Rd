@@ -4,16 +4,16 @@
 \alias{set_synth_years}
 \title{Set Synthetic Year Series}
 \usage{
-set_synth_years(species = c("fr", "wr", "sr", "st"))
+set_synth_years(species = c("fr", "lfr", "wr", "sr", "st"))
 }
 \arguments{
-\item{species}{either "fr", "wr", "sr" for fall run, winter run, or spring run respectively}
+\item{species}{either "fr", "lfr", "wr", "sr" for fall run, late fall run, winter run, or spring run respectively}
 }
 \description{
-Generates model inputs for running the life cycle models in calibration mode
+Generates model params for running the life cycle models in calibration mode
 }
 \details{
-This function modifies the baseline model inputs for a run using
+This function modifies the baseline model params for a run using
 the synthetic year series. More details about the synthetic year series can be found
 here: \code{\link{calibration_year_index}}.
 
@@ -23,7 +23,7 @@ Results of running \code{set_synth_years} for each run are cached and accessible
 }
 \examples{
 \dontrun{
-list2env(set_synth_years("fr"), .GlobalEnv)
+params <- set_synth_years("fr")
 fallRunDSM::fall_run_model(mode = "calibrate", seeds = seeds, ..params = params)
 }
 }
