@@ -2,9 +2,9 @@ remotes::install_github("CVPIA-OSC/DSMflow@main")
 remotes::install_github("CVPIA-OSC/DSMtemperature@main")
 remotes::install_github("CVPIA-OSC/DSMhabitat@main")
 remotes::install_github("CVPIA-OSC/fallRunDSM@main")
-remotes::install_github("CVPIA-OSC/winterRunDSM@main")
-remotes::install_github("CVPIA-OSC/latefallRunDSM@main")
-remotes::install_github("CVPIA-OSC/springRunDSM@main")
+# remotes::install_github("CVPIA-OSC/winterRunDSM@main")
+# remotes::install_github("CVPIA-OSC/latefallRunDSM@main")
+# remotes::install_github("CVPIA-OSC/springRunDSM@main")
 
 # create the data to be cached ----
 # fall run
