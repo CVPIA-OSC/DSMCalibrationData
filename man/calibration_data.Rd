@@ -3,16 +3,10 @@
 \docType{data}
 \name{calibration_data}
 \alias{calibration_data}
-\alias{fall_run_calibration}
-\alias{spring_run_calibration}
-\alias{winter_run_calibration}
+\alias{fall_run_calibration_params}
 \title{Calibration Data}
 \usage{
-fall_run_calibration
-
-spring_run_calibration
-
-winter_run_calibration
+fall_run_calibration_params
 }
 \description{
 Cached data used for calibration of DSM life cycle models

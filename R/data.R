@@ -6,15 +6,21 @@ NULL
 
 #' @rdname calibration_data
 #' @format NULL
-"fall_run_calibration"
+"fall_run_calibration_params"
 
-#' @rdname calibration_data
-#' @format NULL
-"spring_run_calibration"
 
-#' @rdname calibration_data
-#' @format NULL
-"winter_run_calibration"
+# #' @rdname calibration_data
+# #' @format NULL
+# "late_fall_run_calibration_params"
+#
+# #' @rdname calibration_data
+# #' @format NULL
+# "spring_run_calibration_params"
+#
+# #' @rdname calibration_data
+# #' @format NULL
+# "winter_run_calibration_params"
+
 
 #' @title Synthetic Years Index
 #' @description We chose proxy years for the calibration time period of 1998-2017
@@ -52,3 +58,8 @@ NULL
 #' we used 40 as the default escapement value. For watersheds with incomplete data,
 #' we used the mean escapement value.
 "grandtab_imputed"
+
+#' @title Mean Escapement 2013-2017
+#' @description Mean Grandtab in-river escapement values for CVPIA SIT watersheds (2013-2017)
+#' @details see \link{grandtab} for more information on Grandtab
+"mean_escapement_2013_2017"

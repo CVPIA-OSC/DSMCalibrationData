@@ -1,4 +1,4 @@
-species,run,majorbasin,minorbasin,location,timeperiod,startmonth,startyear,endmonth,endyear,count,data_status,source,data_level,record_type,div_group
+species,run,majorbasin,minorbasin,location,timeperiod,startmonth,startyear,endmonth,endyear,count,data_status,source,data_level,record_type,div_group,origin,random_location
 Chinook,Fall,Sacramento and San Joaquin River Systems,All,All,1975,Jan,1975,Dec,1975,177188,Final,Azat, J., 2018. GrandTab 2018.04.09 California Central Valley Chinook Population Database Report. California Department of Fish and Wildlife,Totals,In-River,
 Chinook,Fall,Sacramento and San Joaquin River Systems,All,All,1975,Jan,1975,Dec,1975,18201,Final,Azat, J., 2018. GrandTab 2018.04.09 California Central Valley Chinook Population Database Report. California Department of Fish and Wildlife,Totals,Hatchery,
 Chinook,Fall,Sacramento and San Joaquin River Systems,All,All,1976,Jan,1976,Dec,1976,14858,Final,Azat, J., 2018. GrandTab 2018.04.09 California Central Valley Chinook Population Database Report. California Department of Fish and Wildlife,Totals,Hatchery,
@@ -3617,4 +3617,4 @@ Chinook,Winter,San Joaquin River System,San Joaquin River,Calaveras River,Dec 20
 Chinook,Winter,San Joaquin River System,San Joaquin River,Calaveras River,Dec 2014-Aug 2015,Dec,2014,Apr,2015,,Preliminary,Azat, J., 2018. GrandTab 2018.04.09 California Central Valley Chinook Population Database Report. California Department of Fish and Wildlife,Detail,In-River,Southern Sierra Nevada
 Chinook,Winter,San Joaquin River System,San Joaquin River,Calaveras River,Dec 2015-Aug 2016,Dec,2015,Apr,2016,,Preliminary,Azat, J., 2018. GrandTab 2018.04.09 California Central Valley Chinook Population Database Report. California Department of Fish and Wildlife,Detail,In-River,Southern Sierra Nevada
 Chinook,Winter,San Joaquin River System,San Joaquin River,Calaveras River,Dec 2016-Apr 2017,Dec,2016,Apr,2017,,Preliminary,Azat, J., 2018. GrandTab 2018.04.09 California Central Valley Chinook Population Database Report. California Department of Fish and Wildlife,Detail,In-River,Southern Sierra Nevada
-(3618 rows)
+(3618 rows),,,,,,,,,,,,,,,,,
