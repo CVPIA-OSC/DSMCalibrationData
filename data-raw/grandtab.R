@@ -1,9 +1,11 @@
 library(fallRunDSM)
 library(tidyverse)
 
-watershed_order <- DSMhabitat::watershed_metadata %>%
-  select(watershed, order) %>%
-  filter(order > 0)
+
+watershed_order <- tibble(
+  watershed = DSMscenario::watershed_labels,
+  order = 1:31
+)
 
 # SacPas data
 grandtab_raw <- read_csv("data-raw/Grandtab_Modified.csv")
@@ -128,7 +130,7 @@ grandtab_imputed_fall <- grandtab %>%
   mutate(
     mean = round(mean(count[count > 0], na.rm = TRUE)),
     count2 = case_when(
-      !fall_spawn[watershed] ~ as.numeric(NA),
+      !fall_spawn[watershed] ~ 0,
       fall_spawn[watershed] & is.nan(mean) ~ 40,
       fall_spawn[watershed] & count == 0 ~ mean,
       fall_spawn[watershed] & is.na(count) ~ mean,
@@ -162,6 +164,8 @@ grandtab_imputed_winter <- bind_rows(upsac_wr, bat_wr) %>%
   select(-watershed, -order) %>%
   as.matrix()
 
+grandtab_imputed_winter[which(is.na(grandtab_imputed_winter))] <- 0
+
 rownames(grandtab_imputed_winter) <- watershed_order$watershed
 
 # Spring
@@ -179,7 +183,7 @@ grandtab_imputed_spring <- grandtab %>%
   mutate(
     mean = round(mean(count[count > 0], na.rm = TRUE)),
     count2 = case_when(
-      !spring_spawn[watershed] ~ as.numeric(NA),
+      !spring_spawn[watershed] ~ 0,
       spring_spawn[watershed] & is.nan(mean) ~ 40,
       spring_spawn[watershed] & count == 0 ~ mean,
       spring_spawn[watershed] & is.na(count) ~ mean,
@@ -209,7 +213,7 @@ grandtab_imputed_late_fall <- grandtab %>%
   mutate(
     mean = round(mean(count[count > 0], na.rm = TRUE)),
     count2 = case_when(
-      !late_fall_spawn[watershed] ~ as.numeric(NA),
+      !late_fall_spawn[watershed] ~ 0,
       late_fall_spawn[watershed] & is.nan(mean) ~ 40,
       late_fall_spawn[watershed] & count == 0 ~ mean,
       late_fall_spawn[watershed] & is.na(count) ~ mean,

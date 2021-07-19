@@ -7,23 +7,14 @@
 #' Results of running \code{set_synth_years} for each run are cached and accessible via
 #' \code{\link{fall_run_calibration}}, \code{\link{winter_run_calibration}},and
 #' \code{\link{spring_run_calibration}}
-#' @param species either "fr", "lfr", "wr", "sr" for fall run, late fall run, winter run, or spring run respectively
+#' @param params list object containing all arguments and coefficents for a life cycle model
 #' @examples
 #' \dontrun{
-#' params <- set_synth_years("fr")
+#' params <- set_synth_years(fallRunDSM::params)
 #' fallRunDSM::fall_run_model(mode = "calibrate", seeds = seeds, ..params = params)
 #' }
 #' @export
-set_synth_years <- function(species = c("fr", "lfr", "wr", "sr", "st")) {
-
-  species <- match.arg(species)
-
-  params <- switch(species,
-                   "fr" = fallRunDSM::params,
-                   "lfr" = latefallRunDSM::params,
-                   "wr" = winterRunDSM::params,
-                   "sr" = springRunDSM::params,
-                   "st" = steelheadDSM::params)
+set_synth_years <- function(params) {
 
   spawn_years <- DSMCalibrationData::calibration_year_spawn_index
   years <- DSMCalibrationData::calibration_year_index
