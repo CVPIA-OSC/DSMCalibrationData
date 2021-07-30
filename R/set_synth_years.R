@@ -25,7 +25,7 @@ set_synth_years <- function(params) {
   params$CVP_exports <- params$CVP_exports[ , years]
   params$SWP_exports <- params$SWP_exports[ , years]
   params$proportion_diverted <- params$proportion_diverted[ , , years]
-  params$total_diverted <- params$proportion_diverted[ , , years]
+  params$total_diverted <- params$total_diverted[ , , years]
   params$delta_proportion_diverted <- params$delta_proportion_diverted[ , years, ]
   params$delta_total_diverted <- params$delta_total_diverted[ , years, ]
   params$prop_flow_natal <- params$prop_flow_natal[ , spawn_years]
