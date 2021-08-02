@@ -4,10 +4,18 @@
 \alias{set_synth_years}
 \title{Set Synthetic Year Series}
 \usage{
-set_synth_years(species = c("fr", "lfr", "wr", "sr", "st"))
+set_synth_years(
+  params,
+  spawn_years = DSMCalibrationData::calibration_year_spawn_index,
+  years = DSMCalibrationData::calibration_year_index
+)
 }
 \arguments{
-\item{species}{either "fr", "lfr", "wr", "sr" for fall run, late fall run, winter run, or spring run respectively}
+\item{params}{list object containing all arguments and coefficents for a life cycle model}
+
+\item{spawn_years}{named array of synthetic year series for spawning inputs}
+
+\item{years}{named array of synthetic year series for all other inputs}
 }
 \description{
 Generates model params for running the life cycle models in calibration mode
@@ -23,7 +31,7 @@ Results of running \code{set_synth_years} for each run are cached and accessible
 }
 \examples{
 \dontrun{
-params <- set_synth_years("fr")
+params <- set_synth_years(fallRunDSM::params)
 fallRunDSM::fall_run_model(mode = "calibrate", seeds = seeds, ..params = params)
 }
 }

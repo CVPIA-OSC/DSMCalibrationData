@@ -45,5 +45,12 @@ calibration_year_index <- calibration_year_spawn_index[-1]
 usethis::use_data(calibration_year_index, overwrite = TRUE)
 usethis::use_data(calibration_year_spawn_index, overwrite = TRUE)
 
+calibration_year_index_2019 <- c("1998" = "1998", "1999" = "1997", "2000" = "1993", "2001" = "1981", "2002" = "1989",
+           "2003" = "1993", "2004" = "1993", "2005" = "1993", "2006" = "1998", "2007" = "1994",
+           "2008" = "1988", "2009" = "1994", "2010" = "1985", "2011" = "1997", "2012" = "1985",
+           "2013" = "1994", "2014" = "1992", "2015" = "1992", "2016" = "1989", "2017" = "1998")
 
+calibration_year_spawn_index_2019 <- c("1997" = "1997", calibration_year_index_2019)
 
+usethis::use_data(calibration_year_index_2019, overwrite = TRUE)
+usethis::use_data(calibration_year_spawn_index_2019, overwrite = TRUE)

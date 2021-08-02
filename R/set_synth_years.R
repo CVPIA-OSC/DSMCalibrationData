@@ -8,16 +8,17 @@
 #' \code{\link{fall_run_calibration}}, \code{\link{winter_run_calibration}},and
 #' \code{\link{spring_run_calibration}}
 #' @param params list object containing all arguments and coefficents for a life cycle model
+#' @param spawn_years named array of synthetic year series for spawning inputs
+#' @param years named array of synthetic year series for all other inputs
 #' @examples
 #' \dontrun{
 #' params <- set_synth_years(fallRunDSM::params)
 #' fallRunDSM::fall_run_model(mode = "calibrate", seeds = seeds, ..params = params)
 #' }
 #' @export
-set_synth_years <- function(params) {
-
-  spawn_years <- DSMCalibrationData::calibration_year_spawn_index
-  years <- DSMCalibrationData::calibration_year_index
+set_synth_years <- function(params,
+                            spawn_years = DSMCalibrationData::calibration_year_spawn_index,
+                            years = DSMCalibrationData::calibration_year_index) {
 
   params$freeport_flows <- params$freeport_flows[ , years]
   params$vernalis_flows <- params$vernalis_flows[ , years]
@@ -26,24 +27,27 @@ set_synth_years <- function(params) {
   params$SWP_exports <- params$SWP_exports[ , years]
   params$proportion_diverted <- params$proportion_diverted[ , , years]
   params$total_diverted <- params$total_diverted[ , , years]
+
   params$delta_proportion_diverted <- params$delta_proportion_diverted[ , years, ]
   params$delta_total_diverted <- params$delta_total_diverted[ , years, ]
-  params$prop_flow_natal <- params$prop_flow_natal[ , spawn_years]
-  params$upper_sacramento_flows <- params$upper_sacramento_flows[ , years]
   params$delta_inflow <- params$delta_inflow[ , years, ]
   params$proportion_flow_bypass <- params$proportion_flow_bypass[ , years, ]
   params$gates_overtopped <- params$gates_overtopped[ , years, ]
+  params$avg_temp_delta <- params$avg_temp_delta[ , years, ]
+  params$delta_habitat <- params$delta_habitat[ , years, ]
+
+
+  params$prop_flow_natal <- params$prop_flow_natal[ , spawn_years]
+  params$upper_sacramento_flows <- params$upper_sacramento_flows[ , years]
   params$vernalis_temps <- params$vernalis_temps[ , years]
   params$prisoners_point_temps <- params$prisoners_point_temps[ , years]
   params$degree_days <- params$degree_days[ , , spawn_years]
   params$avg_temp <- params$avg_temp[ , , years]
-  params$avg_temp_delta <- params$avg_temp_delta[ , years, ]
   params$spawning_habitat <- params$spawning_habitat[ , , spawn_years]
   params$inchannel_habitat_fry <- params$inchannel_habitat_fry[ , , years]
   params$inchannel_habitat_juvenile <- params$inchannel_habitat_juvenile[ , , years]
   params$floodplain_habitat <- params$floodplain_habitat[ , , years]
   params$weeks_flooded <- params$weeks_flooded[ , , years]
-  params$delta_habitat <- params$delta_habitat[ , years, ]
   params$sutter_habitat <- params$sutter_habitat[ , years]
   params$yolo_habitat <- params$yolo_habitat[ , years]
 
