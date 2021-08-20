@@ -1,7 +1,6 @@
 library(fallRunDSM)
 library(tidyverse)
 
-
 watershed_order <- tibble(
   watershed = DSMscenario::watershed_labels,
   order = 1:31
@@ -10,71 +9,6 @@ watershed_order <- tibble(
 # SacPas data
 grandtab_raw <- read_csv("data-raw/Grandtab_Modified.csv")
 unique(grandtab_raw$run)
-
-# Explore Locations -----
-unique(grandtab_raw$location)
-# location "Butte Creek" for spring run uses carcus count when available then snorkel
-butte <- c(
-  "Butte Creek - Carcass" = "Butte Creek",
-  "Butte Creek - Snorkel" = "Butte Creek",
-  "Butte Creek" = "Butte Creek")
-
-grandtab_raw %>%
-  mutate(ll = butte[location]) %>%
-  filter(!is.na(ll), startyear >= 1998) %>%
-  select(startyear, location, count, run) %>%
-  spread(startyear, count) %>%  View
-
-# Battle Creek
-# remove "Hatchery Transfers to Battle Creek - CNFH" = "Battle Creek" from battle creek sum
-# remove " Battle Creek - CNFH "
-battle <- c("Battle Creek" = "Battle Creek", "Battle Creek - CNFH" = "Battle Creek",
-            "Battle Creek - Downstream of CNFH" = "Battle Creek",
-            "Battle Creek - Upstream of CNFH" = "Battle Creek",
-            "Hatchery Transfers to Battle Creek - CNFH" = "Battle Creek")
-
-grandtab_raw %>%
-  mutate(ll = battle[location]) %>%
-  filter(!is.na(ll), startyear >= 1998) %>%
-  select(startyear, location, count, run) %>%
-  spread(startyear, count) %>%  View
-
-grandtab_raw %>%
-  filter(location == "Mokelumne River") %>% View
-
-grandtab_raw %>%
-  filter(location %in% names(battle), between(endyear, 2013, 2017)) %>%
-  group_by(location, origin) %>%
-  summarise(n())
-  summarise(mean=mean(count, na.rm=T))
-
-# sacramento
-# remove "Passing RBDD", "Downstream of RBDD", "Passing RBDD", "Upstream of RBDD"
-grandtab_raw %>%
-  filter(location %in% c("Mainstem - Downstream of RBDD",
-                         "Mainstem - Upstream of RBDD",
-                         "Mainstem",
-                         "Passing RBDD",
-                         "Downstream of RBDD",
-                         "Upstream of RBDD"),
-         startyear >= 1998, run == "Late-Fall") %>%
-  select(startyear, minorbasin, location, count, run) %>%
-  spread(startyear, count)
-
-
-grandtab_raw %>%
-  filter(location %in% c("Mainstem - Downstream of RBDD",
-                         "Mainstem - Upstream of RBDD",
-                         "Mainstem",
-                         "Passing RBDD",
-                         "Downstream of RBDD",
-                         "Upstream of RBDD"),
-         between(endyear, 2013, 2017)) %>%
-  group_by(location, origin) %>%
-  summarise(n())
-
-grandtab_raw %>%
-  filter(origin == "Redd Distribution") %>% View
 
 # cleaned up location names
 watershed_lookups <- c(
@@ -118,6 +52,7 @@ grandtab <- grandtab_raw %>%
 # Imputed Grandtab ----
 # Fall
 fall_spawn <- DSMhabitat::fr_spawn[,10,1] != 0
+fall_prop_feather_yuba <- 1 - mean(c(0.076777295, 0.056932196, 0.081441457))
 
 grandtab_imputed_fall <- grandtab %>%
   filter(run == "Fall") %>%
@@ -139,6 +74,9 @@ grandtab_imputed_fall <- grandtab %>%
   ) %>%
   ungroup() %>%
   select(watershed, count = count2, year, order) %>%
+  mutate(count = ifelse(watershed %in% c("Feather River", "Yuba River"),
+                        round(count * fall_prop_feather_yuba),
+                        count)) %>%
   spread(year, count) %>%
   arrange(order) %>%
   select(-watershed, -order) %>%
@@ -171,6 +109,7 @@ rownames(grandtab_imputed_winter) <- watershed_order$watershed
 # Spring
 # TODO what to do about tiny mean values?
 spring_spawn <- DSMhabitat::sr_spawn[,10,1] != 0
+spring_prop_feather_yuba <- mean(c(0.076777295, 0.056932196, 0.081441457))
 
 grandtab_imputed_spring <- grandtab %>%
   filter(run == "Spring") %>%
@@ -198,6 +137,9 @@ grandtab_imputed_spring <- grandtab %>%
   as.matrix()
 
 rownames(grandtab_imputed_spring) <- watershed_order$watershed
+
+grandtab_imputed_spring["Feather River", ] <- round(grandtab_imputed_fall["Feather River", ]/ fall_prop_feather_yuba * spring_prop_feather_yuba)
+grandtab_imputed_spring["Yuba River", ] <- round(grandtab_imputed_fall["Yuba River", ]/ fall_prop_feather_yuba * spring_prop_feather_yuba)
 
 # Late-Fall
 late_fall_spawn <- DSMhabitat::lfr_spawn[,10,1] != 0
@@ -244,6 +186,9 @@ grandtab_observed_fall <- grandtab %>%
   select(-run) %>%
   filter(count > 100) %>%
   right_join(watershed_order) %>%
+  mutate(count = ifelse(watershed %in% c("Feather River", "Yuba River"),
+                        round(count * fall_prop_feather_yuba),
+                        count)) %>%
   spread(year, count) %>%
   select(-`<NA>`) %>%
   arrange(order) %>%
@@ -254,23 +199,11 @@ rownames(grandtab_observed_fall) <- watershed_order$watershed
 
 # Winter
 grandtab_observed_winter <- grandtab_imputed_winter
-  # grandtab %>%
-  # filter(run == "Winter") %>%
-  # select(-run) %>%
-  # filter(count > 100) %>%
-  # right_join(watershed_order) %>%
-  # spread(year, count) %>%
-  # select(-`<NA>`) %>%
-  # arrange(order) %>%
-  # select(-watershed, -order) %>%
-  # as.matrix()
-# rownames(grandtab_observed_winter) <- watershed_order$watershed
 
 # Spring
 grandtab_observed_spring <- grandtab %>%
   filter(run == "Spring") %>%
   select(-run) %>%
-  filter(count > 100) %>%
   right_join(watershed_order) %>%
   spread(year, count) %>%
   select(-`<NA>`) %>%
@@ -279,6 +212,9 @@ grandtab_observed_spring <- grandtab %>%
   as.matrix()
 
 rownames(grandtab_observed_spring) <- watershed_order$watershed
+
+grandtab_observed_spring["Feather River", ] <- round(grandtab_observed_fall["Feather River", ]/ fall_prop_feather_yuba * spring_prop_feather_yuba)
+grandtab_observed_spring["Yuba River", ] <- round(grandtab_observed_fall["Yuba River", ]/ fall_prop_feather_yuba * spring_prop_feather_yuba)
 
 # Late-Fall
 grandtab_observed_late_fall <- grandtab %>%
@@ -301,37 +237,37 @@ grandtab_observed <- list(fall = grandtab_observed_fall,
 usethis::use_data(grandtab_observed, overwrite = TRUE)
 
 # check species presence ---
-should_be_missing <- DSMscenario::watershed_labels[
-  !as.logical(DSMhabitat::watershed_species_present[1:31, ]$fr *
-                DSMhabitat::watershed_species_present[1:31,]$spawn)]
-missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_observed_fall, na.rm = T))]
-all(should_be_missing %in% missing)
-missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_imputed_fall, na.rm = T))]
-all(should_be_missing %in% missing)
-
-should_be_missing <- DSMscenario::watershed_labels[
-  !as.logical(DSMhabitat::watershed_species_present[1:31, ]$lfr *
-                DSMhabitat::watershed_species_present[1:31,]$spawn)]
-missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_observed_late_fall, na.rm = T))]
-all(should_be_missing %in% missing)
-missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_imputed_late_fall, na.rm = T))]
-all(should_be_missing %in% missing)
-
-should_be_missing <- DSMscenario::watershed_labels[
-  !as.logical(DSMhabitat::watershed_species_present[1:31, ]$sr *
-                DSMhabitat::watershed_species_present[1:31,]$spawn)]
-missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_observed_spring, na.rm = T))]
-all(should_be_missing %in% missing)
-missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_imputed_spring, na.rm = T))]
-all(should_be_missing %in% missing)
-
-should_be_missing <- DSMscenario::watershed_labels[
-  !as.logical(DSMhabitat::watershed_species_present[1:31, ]$wr *
-                DSMhabitat::watershed_species_present[1:31,]$spawn)]
-missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_observed_winter, na.rm = T))]
-all(should_be_missing %in% missing)
-missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_imputed_winter, na.rm = T))]
-all(should_be_missing %in% missing)
+# should_be_missing <- DSMscenario::watershed_labels[
+#   !as.logical(DSMhabitat::watershed_species_present[1:31, ]$fr *
+#                 DSMhabitat::watershed_species_present[1:31,]$spawn)]
+# missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_observed_fall, na.rm = T))]
+# all(should_be_missing %in% missing)
+# missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_imputed_fall, na.rm = T))]
+# all(should_be_missing %in% missing)
+#
+# should_be_missing <- DSMscenario::watershed_labels[
+#   !as.logical(DSMhabitat::watershed_species_present[1:31, ]$lfr *
+#                 DSMhabitat::watershed_species_present[1:31,]$spawn)]
+# missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_observed_late_fall, na.rm = T))]
+# all(should_be_missing %in% missing)
+# missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_imputed_late_fall, na.rm = T))]
+# all(should_be_missing %in% missing)
+#
+# should_be_missing <- DSMscenario::watershed_labels[
+#   !as.logical(DSMhabitat::watershed_species_present[1:31, ]$sr *
+#                 DSMhabitat::watershed_species_present[1:31,]$spawn)]
+# missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_observed_spring, na.rm = T))]
+# all(should_be_missing %in% missing)
+# missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_imputed_spring, na.rm = T))]
+# all(should_be_missing %in% missing)
+#
+# should_be_missing <- DSMscenario::watershed_labels[
+#   !as.logical(DSMhabitat::watershed_species_present[1:31, ]$wr *
+#                 DSMhabitat::watershed_species_present[1:31,]$spawn)]
+# missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_observed_winter, na.rm = T))]
+# all(should_be_missing %in% missing)
+# missing <- DSMscenario::watershed_labels[is.nan(rowMeans(grandtab_imputed_winter, na.rm = T))]
+# all(should_be_missing %in% missing)
 
 # Adult Seeds -----
 # Jim used "Battle Creek - Downstream of CNFH" for "Battle Creek"
