@@ -25,7 +25,9 @@ For more information see \href{https://wildlife.ca.gov/Conservation/Fishes/Chino
 This data will be used in the fitness function to measure the difference
 between model predictions and observed escapement. Missing values are NA and we
 made all records less than 100 NA to account for a lack of confidence for counts
-less than 100.
+less than 100. For spring run, counts less than 100 are included. Feather and Yuba
+Rivers do not separate spring and fall run, these estimate were scaled using
+a mean proportion for the runs from 2010-2012 coded wire tag data.
 }
 
 \section{Imputed}{
