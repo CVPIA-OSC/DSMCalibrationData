@@ -284,7 +284,7 @@ usethis::use_data(grandtab_observed, overwrite = TRUE)
 
 # Adult Seeds -----
 # Jim used "Battle Creek - Downstream of CNFH" for "Battle Creek"
-mean_escapement_2013_2017 <- grandtab %>%
+mean_escapement_2013_2017 <- grandtab_with_yuba_updates %>%
   filter(between(year, 2013, 2017)) %>%
   group_by(watershed, run) %>%
   summarise(mean = round(mean(count, na.rm = TRUE))) %>%
