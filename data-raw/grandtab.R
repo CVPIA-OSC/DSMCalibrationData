@@ -108,6 +108,7 @@ bat_wr <- upsac_wr %>%
          count = round((600/mean(count))* count))
 
 grandtab_imputed_winter <- bind_rows(upsac_wr, bat_wr) %>%
+  select(-method) %>%
   right_join(watershed_order) %>%
   spread(year, count) %>%
   select(-`<NA>`) %>%
@@ -189,14 +190,15 @@ usethis::use_data(grandtab_imputed, overwrite = TRUE)
 # Grandtab Observed -----
 
 # Fall
-grandtab_observed_fall <- grandtab %>%
+grandtab_observed_fall <- grandtab_with_yuba_updates %>%
   filter(run == "Fall") %>%
   select(-run) %>%
   filter(count > 100) %>%
   right_join(watershed_order) %>%
-  mutate(count = ifelse(watershed %in% c("Feather River", "Yuba River"),
-                        round(count * fall_prop_feather_yuba),
-                        count)) %>%
+  mutate(count = case_when(watershed == "Feather River" ~ round(count * fall_prop_feather_yuba),
+                           watershed == "Yuba River" & method == "grandtab" ~ round(count * fall_prop_feather_yuba),
+                           T ~ count)) %>%
+  select(-method) %>%
   spread(year, count) %>%
   select(-`<NA>`) %>%
   arrange(order) %>%
@@ -211,7 +213,7 @@ grandtab_observed_winter <- grandtab_imputed_winter
 # Spring
 grandtab_observed_spring <- grandtab %>%
   filter(run == "Spring") %>%
-  select(-run) %>%
+  select(-run, -method) %>%
   right_join(watershed_order) %>%
   spread(year, count) %>%
   select(-`<NA>`) %>%
@@ -223,11 +225,14 @@ rownames(grandtab_observed_spring) <- watershed_order$watershed
 
 grandtab_observed_spring["Feather River", ] <- round(grandtab_observed_fall["Feather River", ]/ fall_prop_feather_yuba * spring_prop_feather_yuba)
 grandtab_observed_spring["Yuba River", ] <- round(grandtab_observed_fall["Yuba River", ]/ fall_prop_feather_yuba * spring_prop_feather_yuba)
+grandtab_observed_spring["Yuba River", 1:6] <- round(grandtab_observed_fall["Yuba River",  1:6]/ fall_prop_feather_yuba * spring_prop_feather_yuba) # use grantab with prop spring scaling for years that there is no vaki
+grandtab_observed_spring["Yuba River", 19:20] <- round(grandtab_observed_fall["Yuba River", 19:20]/ fall_prop_feather_yuba * spring_prop_feather_yuba) # use grantab with prop spring scaling for years that there is no vaki
+
 
 # Late-Fall
 grandtab_observed_late_fall <- grandtab %>%
   filter(run == "Late-Fall") %>%
-  select(-run) %>%
+  select(-run, -method) %>%
   filter(count > 100) %>%
   right_join(watershed_order) %>%
   spread(year, count) %>%
