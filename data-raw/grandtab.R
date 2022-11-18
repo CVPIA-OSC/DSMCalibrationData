@@ -153,15 +153,12 @@ grandtab_imputed_spring["Yuba River", 1:6] <- round(grandtab_imputed_fall["Yuba 
 grandtab_imputed_spring["Yuba River", 19:20] <- round(grandtab_imputed_fall["Yuba River", 19:20]/ fall_prop_feather_yuba * spring_prop_feather_yuba) # use grantab with prop spring scaling for years that there is no vaki
 
 # Late-Fall
-late_fall_spawn <- DSMhabitat::lfr_spawn[,10,1] != 0
+late_fall_spawn <- DSMhabitat::lfr_spawn[['biop_2008_2009']][,10,1] != 0
 
 grandtab_imputed_late_fall <- grandtab %>%
   filter(run == "Late-Fall") %>%
   select(-run) %>%
   right_join(watershed_order) %>%
-  spread(year, count) %>%
-  select(-`<NA>`) %>%
-  gather(year, count, -watershed, -order) %>%
   group_by(watershed, order) %>%
   mutate(
     mean = round(mean(count[count > 0], na.rm = TRUE)),
@@ -177,7 +174,7 @@ grandtab_imputed_late_fall <- grandtab %>%
   select(watershed, count = count2, year, order) %>%
   spread(year, count) %>%
   arrange(order) %>%
-  select(-watershed, -order) %>%
+  select(-watershed, -order, -`<NA>`) %>%
   as.matrix()
 
 rownames(grandtab_imputed_late_fall) <- watershed_order$watershed
