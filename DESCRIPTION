@@ -1,7 +1,7 @@
 Package: DSMCalibrationData
 Type: Package
 Title: DSM Calibration Data
-Version: 1.0
+Version: 1.1
 Authors@R: c(
     person("Sadie", "Gill", email = "sgill@flowwest.com", role = c("aut", "cre")),
     person("Emanuel", "Rodriguez", email = "erodriguez@flowwest.com", role = "aut"),
@@ -12,4 +12,4 @@ Encoding: UTF-8
 LazyData: true
 Depends: 
     R (>= 2.10)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.1
