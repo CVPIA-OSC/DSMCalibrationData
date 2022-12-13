@@ -1,9 +1,9 @@
-pandoc: 2.11.4
-pkgdown: 1.6.1
+pandoc: 2.19.2
+pkgdown: 2.0.6
 pkgdown_sha: ~
 articles: {}
-last_built: 2021-08-20T23:27Z
+last_built: 2022-12-13T21:25Z
 urls:
-  reference: https://CVPIA-OSC.github.io/DSMCalibrationData//reference
-  article: https://CVPIA-OSC.github.io/DSMCalibrationData//articles
+  reference: https://CVPIA-OSC.github.io/DSMCalibrationData/reference
+  article: https://CVPIA-OSC.github.io/DSMCalibrationData/articles
 

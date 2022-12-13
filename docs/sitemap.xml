@@ -1,21 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData//index.html</loc>
+    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData/404.html</loc>
   </url>
   <url>
-    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData//reference/grandtab.html</loc>
+    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData/authors.html</loc>
   </url>
   <url>
-    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData//reference/hello.html</loc>
+    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData/index.html</loc>
   </url>
   <url>
-    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData//reference/mean_escapement_2013_2017.html</loc>
+    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData/LICENSE.html</loc>
   </url>
   <url>
-    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData//reference/set_synth_years.html</loc>
+    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData/news/index.html</loc>
   </url>
   <url>
-    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData//reference/year_indicies.html</loc>
+    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData/reference/grandtab.html</loc>
+  </url>
+  <url>
+    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData/reference/hello.html</loc>
+  </url>
+  <url>
+    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData/reference/mean_escapement_2013_2017.html</loc>
+  </url>
+  <url>
+    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData/reference/set_synth_years.html</loc>
+  </url>
+  <url>
+    <loc>https://CVPIA-OSC.github.io/DSMCalibrationData/reference/year_indicies.html</loc>
   </url>
 </urlset>

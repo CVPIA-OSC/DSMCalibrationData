@@ -15,7 +15,7 @@ reference:
   contents:
   - set_synth_years
   - year_indicies
-  - mean_escapment_2013_2017
+  - mean_escapement_2013_2017
   - grandtab
 
 navbar:
