@@ -1,7 +1,7 @@
 Package: DSMCalibrationData
 Type: Package
 Title: DSM Calibration Data
-Version: 1.1
+Version: 2.0
 Authors@R: c(
     person("Sadie", "Gill", email = "sgill@flowwest.com", role = c("aut", "cre")),
     person("Emanuel", "Rodriguez", email = "erodriguez@flowwest.com", role = "aut"),
