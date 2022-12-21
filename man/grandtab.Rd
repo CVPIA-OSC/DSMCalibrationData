@@ -19,6 +19,9 @@ the US Fish and Wildlife Service, the California Department of Water Resources,
 the East Bay Municipal Utilities District, the US Bureau of Reclamation,
 the Lower Yuba River Management Team, and the Fisheries Foundation of California.
 For more information see \href{https://wildlife.ca.gov/Conservation/Fishes/Chinook-Salmon/Anadromous-Assessment}{CDFW Anadromous Assessment}
+
+GrandTab data is not used for the Yuba River. Instead escapement data for the Yuba comes from
+Vaki monitoring. See \href{https://cvpia-documents.s3.us-west-1.amazonaws.com/CVPIATemplate_AdultYubaRiver_Cordoleani.docx}{SIT proposal} for additional details.
 }
 \section{Observed}{
 

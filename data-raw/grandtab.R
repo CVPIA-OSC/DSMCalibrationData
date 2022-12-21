@@ -47,20 +47,32 @@ grandtab <- grandtab_raw %>%
   filter(!is.na(location2), endyear >= 1998, origin == "In-River") %>%
   group_by(run, watershed = location2, year = endyear) %>%
   summarise(count = sum(count, na.rm = TRUE)) %>%
-  ungroup()
+  ungroup() |>
+  filter(!(watershed == "Yuba River" & run %in% c("Fall", "Spring") &
+             year %in% c(2004:2015, 2018, 2019, 2021))) |>
+  mutate(method = "grandtab") |>
+  glimpse()
+
+# wrangle Yuba to match grandtab format ----
+yuba_data <- read_csv("data-raw/yuba_escapement_values.csv") %>%
+  rename(Spring = spring_run_escapement,
+         Fall = fall_run_escapement) |>
+  pivot_longer(cols = Spring:Fall, names_to = 'run', values_to = 'count') |>
+  mutate(watershed = "Yuba River",
+         method = "vaki") |>  glimpse()
+
+grandtab_with_yuba_updates <- bind_rows(grandtab, yuba_data) |>
+  filter(!is.na(year),  year < 2018) |> glimpse()
 
 # Imputed Grandtab ----
 # Fall
-fall_spawn <- DSMhabitat::fr_spawn[,10,1] != 0
+fall_spawn <- DSMhabitat::fr_spawn[['biop_2008_2009']][, 10, 1] != 0
 fall_prop_feather_yuba <- 1 - mean(c(0.076777295, 0.056932196, 0.081441457))
 
-grandtab_imputed_fall <- grandtab %>%
+grandtab_imputed_fall <- grandtab_with_yuba_updates %>%
   filter(run == "Fall") %>%
   select(-run) %>%
   right_join(watershed_order) %>%
-  spread(year, count) %>%
-  select(-`<NA>`) %>%
-  gather(year, count, -watershed, -order) %>%
   group_by(watershed, order) %>%
   mutate(
     mean = round(mean(count[count > 0], na.rm = TRUE)),
@@ -73,19 +85,20 @@ grandtab_imputed_fall <- grandtab %>%
     )
   ) %>%
   ungroup() %>%
-  select(watershed, count = count2, year, order) %>%
-  mutate(count = ifelse(watershed %in% c("Feather River", "Yuba River"),
-                        round(count * fall_prop_feather_yuba),
-                        count)) %>%
+  select(watershed, count = count2, year, order, method) %>%
+  mutate(count = case_when(watershed == "Feather River" ~ round(count * fall_prop_feather_yuba),
+                           watershed == "Yuba River" & method == "grandtab" ~ round(count * fall_prop_feather_yuba),
+                           T ~ count)) %>%
+  select(-method) %>%
   spread(year, count) %>%
   arrange(order) %>%
-  select(-watershed, -order) %>%
+  select(-watershed, -order, -`<NA>`) %>%
   as.matrix()
 
 rownames(grandtab_imputed_fall) <- watershed_order$watershed
 
 # Winter
-winter_spawn <- DSMhabitat::wr_spawn[ ,10, 1] != 0
+winter_spawn <- DSMhabitat::wr_spawn[['biop_2008_2009']][ ,10, 1] != 0
 upsac_wr <- grandtab %>%
   filter(run == "Winter", watershed == "Upper Sacramento River") %>%
   select(-run)
@@ -95,6 +108,7 @@ bat_wr <- upsac_wr %>%
          count = round((600/mean(count))* count))
 
 grandtab_imputed_winter <- bind_rows(upsac_wr, bat_wr) %>%
+  select(-method) %>%
   right_join(watershed_order) %>%
   spread(year, count) %>%
   select(-`<NA>`) %>%
@@ -108,16 +122,13 @@ rownames(grandtab_imputed_winter) <- watershed_order$watershed
 
 # Spring
 # TODO what to do about tiny mean values?
-spring_spawn <- DSMhabitat::sr_spawn[,10,1] != 0
+spring_spawn <- DSMhabitat::sr_spawn[['biop_2008_2009']][,10,1] != 0
 spring_prop_feather_yuba <- mean(c(0.076777295, 0.056932196, 0.081441457))
 
-grandtab_imputed_spring <- grandtab %>%
+grandtab_imputed_spring <- grandtab_with_yuba_updates %>%
   filter(run == "Spring") %>%
   select(-run) %>%
   right_join(watershed_order) %>%
-  spread(year, count) %>%
-  select(-`<NA>`) %>%
-  gather(year, count, -watershed, -order) %>%
   group_by(watershed, order) %>%
   mutate(
     mean = round(mean(count[count > 0], na.rm = TRUE)),
@@ -133,24 +144,22 @@ grandtab_imputed_spring <- grandtab %>%
   select(watershed, count = count2, year, order) %>%
   spread(year, count) %>%
   arrange(order) %>%
-  select(-watershed, -order) %>%
+  select(-watershed, -order, -`<NA>`) %>%
   as.matrix()
 
 rownames(grandtab_imputed_spring) <- watershed_order$watershed
 
 grandtab_imputed_spring["Feather River", ] <- round(grandtab_imputed_fall["Feather River", ]/ fall_prop_feather_yuba * spring_prop_feather_yuba)
-grandtab_imputed_spring["Yuba River", ] <- round(grandtab_imputed_fall["Yuba River", ]/ fall_prop_feather_yuba * spring_prop_feather_yuba)
+grandtab_imputed_spring["Yuba River", 1:6] <- round(grandtab_imputed_fall["Yuba River",  1:6]/ fall_prop_feather_yuba * spring_prop_feather_yuba) # use grantab with prop spring scaling for years that there is no vaki
+grandtab_imputed_spring["Yuba River", 19:20] <- round(grandtab_imputed_fall["Yuba River", 19:20]/ fall_prop_feather_yuba * spring_prop_feather_yuba) # use grantab with prop spring scaling for years that there is no vaki
 
 # Late-Fall
-late_fall_spawn <- DSMhabitat::lfr_spawn[,10,1] != 0
+late_fall_spawn <- DSMhabitat::lfr_spawn[['biop_2008_2009']][,10,1] != 0
 
 grandtab_imputed_late_fall <- grandtab %>%
   filter(run == "Late-Fall") %>%
   select(-run) %>%
   right_join(watershed_order) %>%
-  spread(year, count) %>%
-  select(-`<NA>`) %>%
-  gather(year, count, -watershed, -order) %>%
   group_by(watershed, order) %>%
   mutate(
     mean = round(mean(count[count > 0], na.rm = TRUE)),
@@ -166,7 +175,7 @@ grandtab_imputed_late_fall <- grandtab %>%
   select(watershed, count = count2, year, order) %>%
   spread(year, count) %>%
   arrange(order) %>%
-  select(-watershed, -order) %>%
+  select(-watershed, -order, -`<NA>`) %>%
   as.matrix()
 
 rownames(grandtab_imputed_late_fall) <- watershed_order$watershed
@@ -181,14 +190,15 @@ usethis::use_data(grandtab_imputed, overwrite = TRUE)
 # Grandtab Observed -----
 
 # Fall
-grandtab_observed_fall <- grandtab %>%
+grandtab_observed_fall <- grandtab_with_yuba_updates %>%
   filter(run == "Fall") %>%
   select(-run) %>%
   filter(count > 100) %>%
   right_join(watershed_order) %>%
-  mutate(count = ifelse(watershed %in% c("Feather River", "Yuba River"),
-                        round(count * fall_prop_feather_yuba),
-                        count)) %>%
+  mutate(count = case_when(watershed == "Feather River" ~ round(count * fall_prop_feather_yuba),
+                           watershed == "Yuba River" & method == "grandtab" ~ round(count * fall_prop_feather_yuba),
+                           T ~ count)) %>%
+  select(-method) %>%
   spread(year, count) %>%
   select(-`<NA>`) %>%
   arrange(order) %>%
@@ -203,7 +213,7 @@ grandtab_observed_winter <- grandtab_imputed_winter
 # Spring
 grandtab_observed_spring <- grandtab %>%
   filter(run == "Spring") %>%
-  select(-run) %>%
+  select(-run, -method) %>%
   right_join(watershed_order) %>%
   spread(year, count) %>%
   select(-`<NA>`) %>%
@@ -215,11 +225,14 @@ rownames(grandtab_observed_spring) <- watershed_order$watershed
 
 grandtab_observed_spring["Feather River", ] <- round(grandtab_observed_fall["Feather River", ]/ fall_prop_feather_yuba * spring_prop_feather_yuba)
 grandtab_observed_spring["Yuba River", ] <- round(grandtab_observed_fall["Yuba River", ]/ fall_prop_feather_yuba * spring_prop_feather_yuba)
+grandtab_observed_spring["Yuba River", 1:6] <- round(grandtab_observed_fall["Yuba River",  1:6]/ fall_prop_feather_yuba * spring_prop_feather_yuba) # use grantab with prop spring scaling for years that there is no vaki
+grandtab_observed_spring["Yuba River", 19:20] <- round(grandtab_observed_fall["Yuba River", 19:20]/ fall_prop_feather_yuba * spring_prop_feather_yuba) # use grantab with prop spring scaling for years that there is no vaki
+
 
 # Late-Fall
 grandtab_observed_late_fall <- grandtab %>%
   filter(run == "Late-Fall") %>%
-  select(-run) %>%
+  select(-run, -method) %>%
   filter(count > 100) %>%
   right_join(watershed_order) %>%
   spread(year, count) %>%
@@ -271,7 +284,7 @@ usethis::use_data(grandtab_observed, overwrite = TRUE)
 
 # Adult Seeds -----
 # Jim used "Battle Creek - Downstream of CNFH" for "Battle Creek"
-mean_escapement_2013_2017 <- grandtab %>%
+mean_escapement_2013_2017 <- grandtab_with_yuba_updates %>%
   filter(between(year, 2013, 2017)) %>%
   group_by(watershed, run) %>%
   summarise(mean = round(mean(count, na.rm = TRUE))) %>%
