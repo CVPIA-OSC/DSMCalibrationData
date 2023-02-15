@@ -92,7 +92,7 @@ grandtab_imputed_fall <- grandtab_with_yuba_updates %>%
   ) %>%
   ungroup() %>%
   transmute(watershed, count = count2, year = as.numeric(year), order) %>%
-  left_join(calc_method, by=c("watershed"="watershed", "year"="year")) |>
+  left_join(calc_method, by=c("watershed"="watershed", "year"="year")) |> # bring methods back when needed
   mutate(count = case_when(watershed == "Feather River" ~ round(count * fall_prop_feather_yuba),
                            watershed == "Yuba River" & method == "grandtab" ~ round(count * fall_prop_feather_yuba),
                            T ~ count)) %>%
