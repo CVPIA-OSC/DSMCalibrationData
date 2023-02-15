@@ -69,10 +69,16 @@ grandtab_with_yuba_updates <- bind_rows(grandtab, yuba_data) |>
 fall_spawn <- DSMhabitat::fr_spawn[['biop_2008_2009']][, 10, 1] != 0
 fall_prop_feather_yuba <- 1 - mean(c(0.076777295, 0.056932196, 0.081441457))
 
+# keep method lookups in a seperate dataframe to allow for spread/gather to work in the next part
+calc_method <- grandtab_with_yuba_updates |> filter(run == "Fall") |> select(watershed, year, method)
+
 grandtab_imputed_fall <- grandtab_with_yuba_updates %>%
   filter(run == "Fall") %>%
-  select(-run) %>%
+  select(-run, -method) %>%
   right_join(watershed_order) %>%
+  spread(year, count) %>%
+  select(-`<NA>`) %>%
+  gather(year, count, -watershed, -order) |>
   group_by(watershed, order) %>%
   mutate(
     mean = round(mean(count[count > 0], na.rm = TRUE)),
@@ -85,14 +91,15 @@ grandtab_imputed_fall <- grandtab_with_yuba_updates %>%
     )
   ) %>%
   ungroup() %>%
-  select(watershed, count = count2, year, order, method) %>%
+  transmute(watershed, count = count2, year = as.numeric(year), order) %>%
+  left_join(calc_method, by=c("watershed"="watershed", "year"="year")) |> # bring methods back when needed
   mutate(count = case_when(watershed == "Feather River" ~ round(count * fall_prop_feather_yuba),
                            watershed == "Yuba River" & method == "grandtab" ~ round(count * fall_prop_feather_yuba),
                            T ~ count)) %>%
   select(-method) %>%
   spread(year, count) %>%
   arrange(order) %>%
-  select(-watershed, -order, -`<NA>`) %>%
+  select(-watershed, -order) %>%
   as.matrix()
 
 rownames(grandtab_imputed_fall) <- watershed_order$watershed
@@ -125,10 +132,16 @@ rownames(grandtab_imputed_winter) <- watershed_order$watershed
 spring_spawn <- DSMhabitat::sr_spawn[['biop_2008_2009']][,10,1] != 0
 spring_prop_feather_yuba <- mean(c(0.076777295, 0.056932196, 0.081441457))
 
+# keep method lookups in a seperate dataframe to allow for spread/gather to work in the next part
+calc_method_sp <- grandtab_with_yuba_updates |> filter(run == "Spring") |> select(watershed, year, method)
+
 grandtab_imputed_spring <- grandtab_with_yuba_updates %>%
   filter(run == "Spring") %>%
-  select(-run) %>%
+  select(-run, -method) %>%
   right_join(watershed_order) %>%
+  spread(year, count) %>%
+  select(-`<NA>`) %>%
+  gather(year, count, -watershed, -order) %>%
   group_by(watershed, order) %>%
   mutate(
     mean = round(mean(count[count > 0], na.rm = TRUE)),
@@ -141,10 +154,12 @@ grandtab_imputed_spring <- grandtab_with_yuba_updates %>%
     )
   ) %>%
   ungroup() %>%
-  select(watershed, count = count2, year, order) %>%
+  transmute(watershed, count = count2, year = as.numeric(year), order) %>%
+  left_join(calc_method_sp, by = c("watershed" = "watershed", "year" = "year")) %>% # bring methods back when needed
+  select(-method) %>%
   spread(year, count) %>%
   arrange(order) %>%
-  select(-watershed, -order, -`<NA>`) %>%
+  select(-watershed, -order) %>%
   as.matrix()
 
 rownames(grandtab_imputed_spring) <- watershed_order$watershed
@@ -156,10 +171,16 @@ grandtab_imputed_spring["Yuba River", 19:20] <- round(grandtab_imputed_fall["Yub
 # Late-Fall
 late_fall_spawn <- DSMhabitat::lfr_spawn[['biop_2008_2009']][,10,1] != 0
 
+# keep method lookups in a seperate dataframe to allow for spread/gather to work in the next part
+calc_method_lf <- grandtab_with_yuba_updates |> filter(run == "Late-Fall") |> select(watershed, year, method)
+
 grandtab_imputed_late_fall <- grandtab %>%
   filter(run == "Late-Fall") %>%
-  select(-run) %>%
+  select(-run, -method) %>%
   right_join(watershed_order) %>%
+  spread(year, count) %>%
+  select(-`<NA>`) %>%
+  gather(year, count, -watershed, -order) %>%
   group_by(watershed, order) %>%
   mutate(
     mean = round(mean(count[count > 0], na.rm = TRUE)),
@@ -172,10 +193,12 @@ grandtab_imputed_late_fall <- grandtab %>%
     )
   ) %>%
   ungroup() %>%
-  select(watershed, count = count2, year, order) %>%
+  transmute(watershed, count = count2, year = as.numeric(year), order) %>%
+  left_join(calc_method_sp, by = c("watershed" = "watershed", "year" = "year")) %>% # bring methods back when needed
+  select(-method) %>%
   spread(year, count) %>%
   arrange(order) %>%
-  select(-watershed, -order, -`<NA>`) %>%
+  select(-watershed, -order) %>%
   as.matrix()
 
 rownames(grandtab_imputed_late_fall) <- watershed_order$watershed
