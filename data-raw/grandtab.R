@@ -234,7 +234,7 @@ rownames(grandtab_observed_fall) <- watershed_order$watershed
 grandtab_observed_winter <- grandtab_imputed_winter
 
 # Spring
-grandtab_observed_spring <- grandtab %>%
+grandtab_observed_spring <- grandtab_with_yuba_updates %>%
   filter(run == "Spring") %>%
   select(-run, -method) %>%
   right_join(watershed_order) %>%
@@ -253,7 +253,7 @@ grandtab_observed_spring["Yuba River", 19:20] <- round(grandtab_observed_fall["Y
 
 
 # Late-Fall
-grandtab_observed_late_fall <- grandtab %>%
+grandtab_observed_late_fall <- grandtab_with_yuba_updates %>%
   filter(run == "Late-Fall") %>%
   select(-run, -method) %>%
   filter(count > 100) %>%
@@ -307,8 +307,14 @@ usethis::use_data(grandtab_observed, overwrite = TRUE)
 
 # Adult Seeds -----
 # Jim used "Battle Creek - Downstream of CNFH" for "Battle Creek"
-mean_escapement_2013_2017 <- grandtab_with_yuba_updates %>%
+mean_escapement_2013_2017 <- grandtab_with_yuba_updates %>% #update to use vaki data
   filter(between(year, 2013, 2017)) %>%
+  pivot_wider(names_from = run, values_from = count) |>
+  mutate(`Adjusted Fall` = ifelse(watershed == "Feather River", Fall * fall_prop_feather_yuba, Fall), #update to add SR to Feather (currently all in Fall)
+         Spring = ifelse(watershed == "Feather River", Fall * spring_prop_feather_yuba, Spring),
+         Fall = `Adjusted Fall`) |>
+  select(-`Adjusted Fall`) |>
+  pivot_longer(4:7, names_to = "run", values_to = "count") |>
   group_by(watershed, run) %>%
   summarise(mean = round(mean(count, na.rm = TRUE))) %>%
   spread(run, mean) %>%
