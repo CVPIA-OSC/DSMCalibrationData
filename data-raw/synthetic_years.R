@@ -39,11 +39,11 @@ calibration_proxy_year <- data.frame(year = 1997:2017, calibration_year = synth_
 cor(calibration_proxy_year$sj_actual, calibration_proxy_year$sj_synth)
 cor(calibration_proxy_year$sac_actual, calibration_proxy_year$sac_synth)
 
-calibration_year_spawn_index <- setNames(calibration_proxy_year$calibration_year, 1997:2017)
-calibration_year_index <- calibration_year_spawn_index[-1]
+calibration_year_spawn_index_V2 <- setNames(calibration_proxy_year$calibration_year, 1997:2017)
+calibration_year_index_V2 <- calibration_year_spawn_index[-1]
 
-usethis::use_data(calibration_year_index, overwrite = TRUE)
-usethis::use_data(calibration_year_spawn_index, overwrite = TRUE)
+usethis::use_data(calibration_year_index_V2, overwrite = TRUE)
+usethis::use_data(calibration_year_spawn_index_V2, overwrite = TRUE)
 
 calibration_year_index_2019 <- c("1998" = "1998", "1999" = "1997", "2000" = "1993", "2001" = "1981", "2002" = "1989",
            "2003" = "1993", "2004" = "1993", "2005" = "1993", "2006" = "1998", "2007" = "1994",

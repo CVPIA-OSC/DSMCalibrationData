@@ -18,7 +18,8 @@
 #' @export
 set_synth_years <- function(params,
                             spawn_years = DSMCalibrationData::calibration_year_spawn_index,
-                            years = DSMCalibrationData::calibration_year_index) {
+                            years = DSMCalibrationData::calibration_year_index,
+                            flow_years = DSMCalibrationData::calibration_year_index_V2) {
 
   params$freeport_flows <- params$freeport_flows[ , years]
   params$vernalis_flows <- params$vernalis_flows[ , years]
